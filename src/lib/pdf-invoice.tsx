@@ -77,6 +77,11 @@ const styles = StyleSheet.create({
   grandTotal: { fontWeight: "bold", fontSize: 12, marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: "#d1d5db" },
   words: { marginTop: 14, padding: 10, backgroundColor: "#f9fafb", fontSize: 9 },
   footer: { marginTop: 20, fontSize: 9, color: "#6b7280" },
+  bankSection: { marginTop: 24, padding: 12, backgroundColor: "#ede9fe", borderWidth: 1, borderColor: "#c4b5fd" },
+  bankTitle: { fontSize: 9, fontWeight: "bold", marginBottom: 8, color: "#5b21b6", textTransform: "uppercase", letterSpacing: 0.5 },
+  bankRow: { flexDirection: "row", marginBottom: 4, fontSize: 9 },
+  bankLabel: { width: "40%", color: "#6b7280" },
+  bankValue: { width: "60%", fontWeight: "bold" },
 });
 
 function PdfInvoiceDoc({ invoice }: { invoice: InvoiceWithRelations }) {
@@ -120,7 +125,9 @@ function PdfInvoiceDoc({ invoice }: { invoice: InvoiceWithRelations }) {
               {(invoice as InvoiceWithRelations & { documentType?: string }).documentType === "quotation" ? "Quotation to" : "Billed to"}
             </Text>
             <Text>{client.name}</Text>
-            {client.billingAddress && <Text>{client.billingAddress}</Text>}
+            {(client.billingAddress || client.shippingAddress) && (
+              <Text>{(client.billingAddress || client.shippingAddress) || ""}</Text>
+            )}
             {client.gstin && <Text>GSTIN: {client.gstin}</Text>}
             {client.phone && <Text>{client.phone}</Text>}
             {client.email && <Text>{client.email}</Text>}
@@ -185,15 +192,41 @@ function PdfInvoiceDoc({ invoice }: { invoice: InvoiceWithRelations }) {
           <Text>Total (in words): {amountInWords(grandTotal)}</Text>
         </View>
 
-        {(org.bankDetails || org.upiId) && (
-          <View style={styles.footer}>
-            {org.bankDetails && <Text>Bank details: {org.bankDetails}</Text>}
-            {org.upiId && <Text>UPI: {org.upiId}</Text>}
+        {invoice.terms && (
+          <View style={[styles.footer, { marginTop: 12 }]}>
+            <Text>Terms: {invoice.terms}</Text>
           </View>
         )}
-        {invoice.terms && (
-          <View style={[styles.footer, { marginTop: 8 }]}>
-            <Text>Terms: {invoice.terms}</Text>
+
+        {(org.bankDetails || org.upiId) && (
+          <View style={styles.bankSection}>
+            <Text style={styles.bankTitle}>Payment information</Text>
+            {org.bankDetails &&
+              org.bankDetails
+                .split(/\r?\n/)
+                .filter(Boolean)
+                .map((line, i) => {
+                  const match = line.match(/^([^:]+):\s*(.*)$/);
+                  if (match) {
+                    return (
+                      <View key={i} style={styles.bankRow}>
+                        <Text style={styles.bankLabel}>{match[1].trim()}</Text>
+                        <Text style={styles.bankValue}>{match[2].trim()}</Text>
+                      </View>
+                    );
+                  }
+                  return (
+                    <View key={i} style={styles.bankRow}>
+                      <Text style={styles.bankValue}>{line.trim()}</Text>
+                    </View>
+                  );
+                })}
+            {org.upiId && (
+              <View style={[styles.bankRow, { marginTop: 4 }]}>
+                <Text style={styles.bankLabel}>UPI ID</Text>
+                <Text style={styles.bankValue}>{org.upiId}</Text>
+              </View>
+            )}
           </View>
         )}
       </Page>

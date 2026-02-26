@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDate, amountInWords } from "@/lib/utils";
+import { PaymentInfoDisplay } from "@/components/invoice/payment-info-display";
 
 export default async function QuotationDetailPage({
   params,
@@ -51,20 +52,37 @@ export default async function QuotationDetailPage({
           <CardHeader>
             <CardTitle>From</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm">
+          <CardContent className="text-sm space-y-1">
             <p className="font-medium">{quotation.organization.name}</p>
-            {quotation.organization.address && <p>{quotation.organization.address}</p>}
+            {quotation.organization.address && <p className="text-muted-foreground">{quotation.organization.address}</p>}
             {quotation.organization.gstNumber && <p>GSTIN: {quotation.organization.gstNumber}</p>}
+            {quotation.organization.email && (
+              <p><a href={`mailto:${quotation.organization.email}`} className="text-primary hover:underline">{quotation.organization.email}</a></p>
+            )}
+            {quotation.organization.phone && (
+              <p><a href={`tel:${quotation.organization.phone}`} className="text-primary hover:underline">{quotation.organization.phone}</a></p>
+            )}
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
             <CardTitle>Quotation to</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm">
+          <CardContent className="text-sm space-y-1">
             <p className="font-medium">{quotation.client.name}</p>
-            {quotation.client.billingAddress && <p>{quotation.client.billingAddress}</p>}
+            {(quotation.client.billingAddress || quotation.client.shippingAddress) && (
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">Address: </span>
+                {quotation.client.billingAddress || quotation.client.shippingAddress}
+              </p>
+            )}
             {quotation.client.gstin && <p>GSTIN: {quotation.client.gstin}</p>}
+            {quotation.client.email && (
+              <p><a href={`mailto:${quotation.client.email}`} className="text-primary hover:underline">{quotation.client.email}</a></p>
+            )}
+            {quotation.client.phone && (
+              <p><a href={`tel:${quotation.client.phone}`} className="text-primary hover:underline">{quotation.client.phone}</a></p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -136,6 +154,14 @@ export default async function QuotationDetailPage({
             {quotation.terms && <p className="mt-2">{quotation.terms}</p>}
           </CardContent>
         </Card>
+      )}
+
+      {(quotation.organization.bankDetails || quotation.organization.upiId) && (
+        <PaymentInfoDisplay
+          bankDetails={quotation.organization.bankDetails}
+          upiId={quotation.organization.upiId}
+          settingsUrl="/dashboard/settings"
+        />
       )}
     </div>
   );

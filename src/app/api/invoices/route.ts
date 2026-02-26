@@ -100,7 +100,9 @@ export async function POST(req: NextRequest) {
       const advancePayment = Number(parsed.data.advancePayment) || 0;
       const grandTotal = subtotal + totalGst + deliveryCharges - advancePayment;
 
-      const inv = await tx.invoice.create({
+      // Use a single create with nested createMany to keep the transaction fast
+      // and avoid extra queries inside the interactive transaction.
+      return tx.invoice.create({
         data: {
           organizationId: tenant.organizationId,
           clientId: parsed.data.clientId,
@@ -116,13 +118,12 @@ export async function POST(req: NextRequest) {
           notes: parsed.data.notes ?? null,
           terms: parsed.data.terms ?? null,
           status: "sent",
+          items: {
+            createMany: {
+              data: itemsData,
+            },
+          },
         },
-      });
-      await tx.invoiceItem.createMany({
-        data: itemsData.map((it) => ({ ...it, invoiceId: inv.id })),
-      });
-      return tx.invoice.findUnique({
-        where: { id: inv.id },
         include: { items: true, client: true },
       });
     });

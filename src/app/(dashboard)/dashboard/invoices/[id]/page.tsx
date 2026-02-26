@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDate, amountInWords } from "@/lib/utils";
 import InvoiceActions from "./invoice-actions";
+import { PaymentInfoDisplay } from "@/components/invoice/payment-info-display";
 
 export default async function InvoiceDetailPage({
   params,
@@ -49,7 +50,13 @@ export default async function InvoiceDetailPage({
             {invoice.status}
           </span>
         </div>
-        <InvoiceActions invoiceId={id} status={invoice.status} grandTotal={grandTotal} totalPaid={totalPaid} />
+        <InvoiceActions
+          invoiceId={id}
+          status={invoice.status}
+          grandTotal={grandTotal}
+          totalPaid={totalPaid}
+          docNumber={invoice.invoiceNumber}
+        />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -57,20 +64,37 @@ export default async function InvoiceDetailPage({
           <CardHeader>
             <CardTitle>From</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm">
+          <CardContent className="text-sm space-y-1">
             <p className="font-medium">{invoice.organization.name}</p>
-            {invoice.organization.address && <p>{invoice.organization.address}</p>}
+            {invoice.organization.address && <p className="text-muted-foreground">{invoice.organization.address}</p>}
             {invoice.organization.gstNumber && <p>GSTIN: {invoice.organization.gstNumber}</p>}
+            {invoice.organization.email && (
+              <p><a href={`mailto:${invoice.organization.email}`} className="text-primary hover:underline">{invoice.organization.email}</a></p>
+            )}
+            {invoice.organization.phone && (
+              <p><a href={`tel:${invoice.organization.phone}`} className="text-primary hover:underline">{invoice.organization.phone}</a></p>
+            )}
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
             <CardTitle>Bill to</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm">
+          <CardContent className="text-sm space-y-1">
             <p className="font-medium">{invoice.client.name}</p>
-            {invoice.client.billingAddress && <p>{invoice.client.billingAddress}</p>}
+            {(invoice.client.billingAddress || invoice.client.shippingAddress) && (
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">Address: </span>
+                {invoice.client.billingAddress || invoice.client.shippingAddress}
+              </p>
+            )}
             {invoice.client.gstin && <p>GSTIN: {invoice.client.gstin}</p>}
+            {invoice.client.email && (
+              <p><a href={`mailto:${invoice.client.email}`} className="text-primary hover:underline">{invoice.client.email}</a></p>
+            )}
+            {invoice.client.phone && (
+              <p><a href={`tel:${invoice.client.phone}`} className="text-primary hover:underline">{invoice.client.phone}</a></p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -164,6 +188,14 @@ export default async function InvoiceDetailPage({
             {invoice.terms && <p className="mt-2">{invoice.terms}</p>}
           </CardContent>
         </Card>
+      )}
+
+      {(invoice.organization.bankDetails || invoice.organization.upiId) && (
+        <PaymentInfoDisplay
+          bankDetails={invoice.organization.bankDetails}
+          upiId={invoice.organization.upiId}
+          settingsUrl="/dashboard/settings"
+        />
       )}
     </div>
   );
