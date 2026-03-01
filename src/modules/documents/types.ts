@@ -26,7 +26,10 @@ export type BankDetails = {
   accountNumber: string;
   ifsc: string;
   bankName: string;
+  accountType?: string;
   upiId?: string;
+  /** When parsing failed, show this raw text in the payment section. */
+  rawText?: string;
 };
 
 export type DocumentData = {

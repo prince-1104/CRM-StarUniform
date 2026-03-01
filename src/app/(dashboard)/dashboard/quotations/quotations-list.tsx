@@ -9,7 +9,7 @@ type Quotation = {
   invoiceDate: Date;
   grandTotal: { toString(): string };
   status: string;
-  client: { name: string };
+  client: { name: string } | null;
 };
 
 export default function QuotationsList({
@@ -52,7 +52,7 @@ export default function QuotationsList({
                         {q.invoiceNumber}
                       </Link>
                     </td>
-                    <td className="p-3">{q.client.name}</td>
+                    <td className="p-3">{q.client?.name ?? "—"}</td>
                     <td className="p-3">
                       {new Date(q.invoiceDate).toLocaleDateString("en-IN")}
                     </td>

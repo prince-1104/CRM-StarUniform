@@ -4,10 +4,6 @@ import { InvoiceDocument } from "./pdf/InvoiceDocument";
 import { QuotationDocument } from "./pdf/QuotationDocument";
 import { validateDocumentData, DocumentValidationError, normalizeDocumentData } from "./validateDocumentData";
 
-function normalize(data: DocumentData | LegacyDocumentData): DocumentData {
-  return normalizeDocumentData(data);
-}
-
 /**
  * Generate invoice PDF as Blob.
  * Filename: Invoice-<number>.pdf
@@ -15,7 +11,7 @@ function normalize(data: DocumentData | LegacyDocumentData): DocumentData {
 export async function generateInvoicePdf(
   data: DocumentData | LegacyDocumentData
 ): Promise<Blob> {
-  const normalized = normalize(data);
+  const normalized = normalizeDocumentData(data);
   validateDocumentData(normalized);
 
   const { renderToBuffer } = await import("@react-pdf/renderer");
@@ -44,7 +40,7 @@ export async function generateQuotationPdf(
   data: DocumentData | LegacyDocumentData,
   validForDays: number = 15
 ): Promise<Blob> {
-  const normalized = normalize(data);
+  const normalized = normalizeDocumentData(data);
   validateDocumentData(normalized);
 
   const { renderToBuffer } = await import("@react-pdf/renderer");

@@ -10,7 +10,7 @@ import { amountInWords } from "./utils";
 
 type InvoiceWithRelations = Invoice & {
   items: InvoiceItem[];
-  client: Client;
+  client: Client | null;
   organization: Organization;
 };
 
@@ -124,13 +124,19 @@ function PdfInvoiceDoc({ invoice }: { invoice: InvoiceWithRelations }) {
             <Text style={styles.label}>
               {(invoice as InvoiceWithRelations & { documentType?: string }).documentType === "quotation" ? "Quotation to" : "Billed to"}
             </Text>
-            <Text>{client.name}</Text>
-            {(client.billingAddress || client.shippingAddress) && (
-              <Text>{(client.billingAddress || client.shippingAddress) || ""}</Text>
+            {client ? (
+              <>
+                <Text>{client.name}</Text>
+                {(client.billingAddress || client.shippingAddress) && (
+                  <Text>{(client.billingAddress || client.shippingAddress) || ""}</Text>
+                )}
+                {client.gstin && <Text>GSTIN: {client.gstin}</Text>}
+                {client.phone && <Text>{client.phone}</Text>}
+                {client.email && <Text>{client.email}</Text>}
+              </>
+            ) : (
+              <Text>—</Text>
             )}
-            {client.gstin && <Text>GSTIN: {client.gstin}</Text>}
-            {client.phone && <Text>{client.phone}</Text>}
-            {client.email && <Text>{client.email}</Text>}
           </View>
         </View>
 

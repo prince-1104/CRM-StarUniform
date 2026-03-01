@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text } from "@react-pdf/renderer";
 import { docStyles } from "../pdf/documentStyles";
-import { formatCurrency } from "../utils/formatCurrency";
+import { formatCurrencyForPdf } from "../utils/formatCurrency";
 import type { TotalsResult } from "../types";
 
 type TotalsBlockProps = {
@@ -27,32 +27,36 @@ export function TotalsBlock({
   grandTotal = Math.max(0, grandTotal);
 
   return (
-    <View style={docStyles.totalsWrap}>
-      <View style={docStyles.totalRow}>
-        <Text>Subtotal</Text>
-        <Text>{formatCurrency(totals.subtotal, currency)}</Text>
-      </View>
-      {totals.totalGst > 0 && (
+    <View style={docStyles.totalsSection}>
+      <View style={docStyles.totalsBox}>
         <View style={docStyles.totalRow}>
-          <Text>Total GST</Text>
-          <Text>{formatCurrency(totals.totalGst, currency)}</Text>
+          <Text>Subtotal</Text>
+          <Text>{formatCurrencyForPdf(totals.subtotal, currency)}</Text>
         </View>
-      )}
-      {deliveryCharges != null && deliveryCharges > 0 && (
         <View style={docStyles.totalRow}>
-          <Text>Delivery charges</Text>
-          <Text>{formatCurrency(deliveryCharges, currency)}</Text>
+          <Text>GST (0%)</Text>
+          <Text>{formatCurrencyForPdf(totals.totalGst, currency)}</Text>
         </View>
-      )}
-      {advancePayment != null && advancePayment > 0 && (
         <View style={docStyles.totalRow}>
-          <Text>Advance paid</Text>
-          <Text>({formatCurrency(advancePayment, currency)})</Text>
+          <Text>Discount</Text>
+          <Text>—</Text>
         </View>
-      )}
-      <View style={docStyles.grandTotalRow}>
-        <Text>Grand total</Text>
-        <Text>{formatCurrency(grandTotal, currency)}</Text>
+        {deliveryCharges != null && deliveryCharges > 0 && (
+          <View style={docStyles.totalRow}>
+            <Text>Delivery charges</Text>
+            <Text>{formatCurrencyForPdf(deliveryCharges, currency)}</Text>
+          </View>
+        )}
+        {advancePayment != null && advancePayment > 0 && (
+          <View style={docStyles.totalRow}>
+            <Text>Advance paid</Text>
+            <Text>({formatCurrencyForPdf(advancePayment, currency)})</Text>
+          </View>
+        )}
+        <View style={docStyles.grandTotalRow}>
+          <Text>Grand Total</Text>
+          <Text style={docStyles.grandTotalValue}>{formatCurrencyForPdf(grandTotal, currency)}</Text>
+        </View>
       </View>
     </View>
   );

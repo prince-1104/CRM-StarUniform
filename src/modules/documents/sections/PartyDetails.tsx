@@ -9,25 +9,20 @@ type PartyDetailsProps = {
   toLabel: string;
 };
 
-export function PartyDetails({ billedBy, billedTo, toLabel }: PartyDetailsProps) {
+export function PartyDetails({ billedTo, toLabel }: PartyDetailsProps) {
+  const parts: string[] = [];
+  if (billedTo.address) parts.push(billedTo.address);
+  if (billedTo.email) parts.push(billedTo.email);
+  if (billedTo.phone) parts.push(billedTo.phone);
+  const detailLine = parts.join(" · ");
+
   return (
-    <View style={docStyles.partyRow}>
-      <View style={docStyles.partyBlock}>
-        <Text style={docStyles.sectionLabel}>Billed by</Text>
-        <Text style={docStyles.body}>{billedBy.name}</Text>
-        {billedBy.address ? <Text style={docStyles.body}>{billedBy.address}</Text> : null}
-        {billedBy.gstin ? <Text style={docStyles.body}>GSTIN: {billedBy.gstin}</Text> : null}
-        {billedBy.email ? <Text style={docStyles.body}>{billedBy.email}</Text> : null}
-        {billedBy.phone ? <Text style={docStyles.body}>{billedBy.phone}</Text> : null}
-      </View>
-      <View style={docStyles.partyBlock}>
-        <Text style={docStyles.sectionLabel}>{toLabel}</Text>
-        <Text style={docStyles.body}>{billedTo.name}</Text>
-        {billedTo.address ? <Text style={docStyles.body}>{billedTo.address}</Text> : null}
-        {billedTo.gstin ? <Text style={docStyles.body}>GSTIN: {billedTo.gstin}</Text> : null}
-        {billedTo.email ? <Text style={docStyles.body}>{billedTo.email}</Text> : null}
-        {billedTo.phone ? <Text style={docStyles.body}>{billedTo.phone}</Text> : null}
-      </View>
+    <View style={docStyles.billedToSection}>
+      <Text style={docStyles.partyLabel}>{toLabel}</Text>
+      <Text style={docStyles.partyName}>{billedTo.name}</Text>
+      {detailLine ? (
+        <Text style={docStyles.partyDetail}>{detailLine}</Text>
+      ) : null}
     </View>
   );
 }

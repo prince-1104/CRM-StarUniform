@@ -14,8 +14,9 @@ import {
   CreditCard,
   PanelLeftClose,
   PanelLeft,
-  Plus,
   LogOut,
+  HelpCircle,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -30,22 +31,17 @@ import {
 
 const mainNav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/clients", label: "Clients", icon: Users },
   { href: "/dashboard/invoices", label: "Invoices", icon: FileText },
-  { href: "/dashboard/quotations", label: "Quotations", icon: FileCheck },
-  { href: "/dashboard/catalogue", label: "Products / Catalogue", icon: Package },
+  { href: "/dashboard/payments", label: "Payments", icon: CreditCard },
+  { href: "/dashboard/clients", label: "Clients", icon: Users, hasDropdown: true },
+  { href: "/dashboard/reports", label: "Reports", icon: BarChart3, badge: 120 },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard/help", label: "Help", icon: HelpCircle },
 ];
 
 const secondaryNav = [
-  { href: "/dashboard/reports", label: "Reports", icon: BarChart3 },
-  { href: "/dashboard/payments", label: "Payments", icon: CreditCard },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-];
-
-const quickCreateLinks = [
-  { href: "/dashboard/invoices/new", label: "Invoice" },
-  { href: "/dashboard/clients/new", label: "Client" },
-  { href: "/dashboard/catalogue/new", label: "Product" },
+  { href: "/dashboard/quotations", label: "Quotations", icon: FileCheck },
+  { href: "/dashboard/catalogue", label: "Products / Catalogue", icon: Package },
 ];
 
 export function DashboardSidebar() {
@@ -59,14 +55,17 @@ export function DashboardSidebar() {
   return (
     <aside
       className={cn(
-        "flex h-screen flex-col border-r bg-card transition-[width] duration-200",
+        "flex h-screen flex-col bg-sidebar text-sidebar-foreground transition-[width] duration-200",
         collapsed ? "w-[52px]" : "w-56"
       )}
     >
       {/* Logo + collapse */}
-      <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b px-3">
+      <div className="flex h-14 shrink-0 items-center justify-between gap-2 px-3 border-sidebar-accent/20 border-b">
         {!collapsed && (
-          <Link href="/dashboard" className="font-semibold text-foreground">
+          <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-sidebar-foreground">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-accent text-sidebar-accent-foreground text-sm font-bold">
+              S
+            </span>
             Star Uniform
           </Link>
         )}
@@ -74,6 +73,7 @@ export function DashboardSidebar() {
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
+          className="text-sidebar-muted hover:text-sidebar-foreground hover:bg-white/10"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
@@ -84,57 +84,84 @@ export function DashboardSidebar() {
         </Button>
       </div>
 
-      {/* Quick Create */}
-      <div className="p-2 border-b">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className={cn("w-full", collapsed && "w-9 px-0")} size="sm">
-              <Plus className="h-4 w-4 shrink-0" />
-              {!collapsed && <span className="ml-2">Quick Create</span>}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48">
-            {quickCreateLinks.map((item) => (
-              <DropdownMenuItem key={item.href} asChild>
-                <Link href={item.href}>{item.label}</Link>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      {/* Main nav — Invoize order */}
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        {mainNav.map((item) => {
+          const active = isActive(item.href);
+          const content = (
+            <>
+              <item.icon className="h-4 w-4 shrink-0" />
+              {!collapsed && (
+                <>
+                  <span className="flex-1">{item.label}</span>
+                  {item.hasDropdown && <ChevronDown className="h-3.5 w-3.5 text-sidebar-muted" />}
+                  {item.badge != null && (
+                    <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs font-medium text-white">
+                      {item.badge}
+                    </span>
+                  )}
+                </>
+              )}
+            </>
+          );
 
-      {/* Main nav */}
-      <nav className="flex-1 overflow-y-auto p-2 space-y-1">
-        {mainNav.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
-              collapsed && "justify-center px-2",
-              isActive(item.href)
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-accent text-foreground"
-            )}
-            title={collapsed ? item.label : undefined}
-          >
-            <item.icon className="h-4 w-4 shrink-0" />
-            {!collapsed && item.label}
-          </Link>
-        ))}
+          if (item.hasDropdown && !collapsed) {
+            return (
+              <DropdownMenu key={item.href}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                      active
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-muted hover:bg-white/10 hover:text-sidebar-foreground"
+                    )}
+                  >
+                    {content}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link href={item.href}>View clients</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/clients/new">Add client</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            );
+          }
 
-        <div className="my-2 h-px bg-border" />
+          return (
+            <Link
+              key={item.href}
+              href={item.href === "/dashboard/help" ? "/dashboard/settings" : item.href}
+              className={cn(
+                "flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                collapsed && "justify-center px-2",
+                active
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-muted hover:bg-white/10 hover:text-sidebar-foreground"
+              )}
+              title={collapsed ? item.label : undefined}
+            >
+              {content}
+            </Link>
+          );
+        })}
+
+        <div className="my-3 h-px bg-white/10" />
 
         {secondaryNav.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+              "flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors",
               collapsed && "justify-center px-2",
               isActive(item.href)
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-accent text-muted-foreground hover:text-foreground"
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-muted hover:bg-white/10 hover:text-sidebar-foreground"
             )}
             title={collapsed ? item.label : undefined}
           >
@@ -145,14 +172,17 @@ export function DashboardSidebar() {
       </nav>
 
       {/* Bottom: theme + log out */}
-      <div className="border-t p-2 space-y-1">
+      <div className="border-t border-white/10 p-3 space-y-1">
         <div className={cn("flex items-center gap-2", collapsed ? "justify-center" : "justify-between px-2 py-1")}>
-          {!collapsed && <span className="text-xs text-muted-foreground">Theme</span>}
-          <ThemeToggle variant="ghost" size="icon" />
+          {!collapsed && <span className="text-xs text-sidebar-muted">Theme</span>}
+          <ThemeToggle variant="ghost" size="icon" className="text-sidebar-muted hover:text-sidebar-foreground hover:bg-white/10" />
         </div>
         <Button
           variant="ghost"
-          className={cn("w-full justify-start gap-2", collapsed && "w-9 justify-center px-0")}
+          className={cn(
+            "w-full justify-start gap-2 text-sidebar-muted hover:bg-white/10 hover:text-sidebar-foreground",
+            collapsed && "w-9 justify-center px-0"
+          )}
           onClick={() => signOut({ callbackUrl: "/" })}
           title={collapsed ? "Log out" : undefined}
         >

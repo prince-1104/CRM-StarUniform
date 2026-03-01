@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { Search, Bell, ChevronDown, User, Settings, LogOut } from "lucide-react";
+import { Search, Bell, ChevronDown, User, Settings, LogOut, ArrowRight, SlidersHorizontal, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -22,22 +23,34 @@ export function Topbar({ className }: { className?: string }) {
         className
       )}
     >
-      {/* Global search — placeholder for Cmd+K */}
-      <button
-        type="button"
-        className="flex flex-1 max-w-md items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-      >
-        <Search className="h-4 w-4 shrink-0" />
-        <span>Search...</span>
-        <kbd className="ml-auto hidden rounded border bg-muted px-1.5 py-0.5 text-xs font-mono sm:inline-block">
-          ⌘K
-        </kbd>
-      </button>
+      {/* Search — Invoize style */}
+      <div className="flex flex-1 max-w-xl items-center gap-2">
+        <div className="relative flex flex-1 items-center rounded-xl border bg-muted/50 px-3 py-2.5 text-sm text-muted-foreground transition-colors focus-within:bg-background focus-within:text-foreground focus-within:ring-2 focus-within:ring-primary/20">
+          <Search className="h-4 w-4 shrink-0 mr-2" />
+          <span className="flex-1">Search invoices or clients</span>
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/70" />
+        </div>
+        <Button variant="ghost" size="icon" className="shrink-0" aria-label="Filter or sort">
+          <SlidersHorizontal className="h-4 w-4" />
+        </Button>
+      </div>
 
       <div className="flex items-center gap-2">
-        {/* Notifications */}
+        <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg">
+          <Link href="/dashboard/invoices/new" className="inline-flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Create Invoice
+          </Link>
+        </Button>
+
         <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
           <Bell className="h-4 w-4" />
+        </Button>
+
+        <Button variant="ghost" size="icon" aria-label="Settings" asChild>
+          <Link href="/dashboard/settings">
+            <Settings className="h-4 w-4" />
+          </Link>
         </Button>
 
         {/* User menu */}
@@ -45,7 +58,7 @@ export function Topbar({ className }: { className?: string }) {
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="flex items-center gap-2 pl-2 pr-1"
+              className="flex items-center gap-2 pl-2 pr-1 rounded-full"
               aria-label="User menu"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">

@@ -60,7 +60,8 @@ export async function POST(req: NextRequest) {
     const invoiceDate = new Date(parsed.data.invoiceDate);
     const dueDate = parsed.data.dueDate ? new Date(parsed.data.dueDate) : null;
 
-    const invoice = await prisma.$transaction(async (tx) => {
+    const invoice = await prisma.$transaction(
+      async (tx) => {
       const updateField = isQuotation ? "quotationNextNumber" : "invoiceNextNumber";
       const org = await tx.organization.update({
         where: { id: tenant.organizationId },
@@ -102,10 +103,16 @@ export async function POST(req: NextRequest) {
 
       // Use a single create with nested createMany to keep the transaction fast
       // and avoid extra queries inside the interactive transaction.
+      const clientId =
+        typeof parsed.data.clientId === "string" && parsed.data.clientId.trim()
+          ? parsed.data.clientId.trim()
+          : null;
+      if (!isQuotation && !clientId)
+        throw new Error("Client required");
       return tx.invoice.create({
         data: {
           organizationId: tenant.organizationId,
-          clientId: parsed.data.clientId,
+          ...(clientId != null ? { clientId } : {}),
           documentType: isQuotation ? "quotation" : "invoice",
           invoiceNumber,
           invoiceDate,
@@ -126,7 +133,9 @@ export async function POST(req: NextRequest) {
         },
         include: { items: true, client: true },
       });
-    });
+      },
+      { timeout: 15000, maxWait: 10000 }
+    );
 
     revalidateTag("invoices");
     revalidateTag("dashboard-stats");

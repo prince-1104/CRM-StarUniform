@@ -158,7 +158,7 @@ model Product {
 model Invoice {
   id             String    @id @default(cuid())
   organizationId String
-  clientId       String
+  clientId       String?   // optional for quotations
   documentType   String    @default("invoice") // "invoice" | "quotation"
   invoiceNumber  String
   invoiceDate    DateTime  @db.Date
@@ -177,7 +177,7 @@ model Invoice {
   deletedAt      DateTime?
 
   organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  client       Client        @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  client       Client?       @relation(fields: [clientId], references: [id], onDelete: Restrict)
   items        InvoiceItem[]
   payments     Payment[]
 

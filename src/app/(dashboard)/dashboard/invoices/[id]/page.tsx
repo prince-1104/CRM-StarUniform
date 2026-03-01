@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDate, amountInWords } from "@/lib/utils";
 import InvoiceActions from "./invoice-actions";
 import { PaymentInfoDisplay } from "@/components/invoice/payment-info-display";
+import { AlertCircle } from "lucide-react";
 
 export default async function InvoiceDetailPage({
   params,
@@ -16,10 +17,43 @@ export default async function InvoiceDetailPage({
   const tenant = await getTenant();
   if (!tenant) return null;
   const { id } = await params;
-  const invoice = await prisma.invoice.findFirst({
-    where: { id, organizationId: tenant.organizationId, deletedAt: null },
-    include: { items: true, client: true, organization: true, payments: true },
-  });
+
+  let invoice: Awaited<
+    ReturnType<
+      typeof prisma.invoice.findFirst<{
+        include: { items: true; client: true; organization: true; payments: true };
+      }>
+    >
+  > = null;
+  try {
+    invoice = await prisma.invoice.findFirst({
+      where: { id, organizationId: tenant.organizationId, deletedAt: null },
+      include: { items: true, client: true, organization: true, payments: true },
+    });
+  } catch {
+    return (
+      <div className="space-y-4">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/dashboard/invoices">← Invoices</Link>
+        </Button>
+        <Card className="border-amber-200 dark:border-amber-800">
+          <CardContent className="flex items-center gap-3 pt-6">
+            <AlertCircle className="h-10 w-10 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div>
+              <p className="font-medium">Database temporarily unavailable</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                We couldn’t load this invoice. Check your connection or try again later.
+              </p>
+              <Button asChild className="mt-4">
+                <Link href="/dashboard/invoices">Back to Invoices</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!invoice) notFound();
 
   const subtotal = Number(invoice.subtotal);

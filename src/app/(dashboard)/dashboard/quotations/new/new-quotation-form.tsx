@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { useState } from "react";
-import { Plus, X, ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { AddClientDialog } from "@/components/forms/add-client-dialog";
 import { formatCurrency } from "@/lib/utils";
 
@@ -55,8 +55,6 @@ export function NewQuotationForm({
 }) {
   const router = useRouter();
   const [clients, setClients] = useState(initialClients);
-  const [showDelivery, setShowDelivery] = useState(false);
-  const [showAdvance, setShowAdvance] = useState(false);
   const [showNotesAndTerms, setShowNotesAndTerms] = useState(false);
 
   const {
@@ -79,21 +77,6 @@ export function NewQuotationForm({
   });
 
   const watchedItems = watch("items");
-  const watchedDelivery = watch("deliveryCharges");
-  const watchedAdvance = watch("advancePayment");
-
-  const subtotal = (watchedItems ?? []).reduce(
-    (sum, item) => sum + lineAmount(item.quantity || 0, item.rate || 0),
-    0
-  );
-  const totalGst = (watchedItems ?? []).reduce(
-    (sum, item) => sum + gstOnAmount(lineAmount(item.quantity || 0, item.rate || 0), item.gstPercent || 0),
-    0
-  );
-  const delivery = Number(watchedDelivery) || 0;
-  const advance = Number(watchedAdvance) || 0;
-  const grandTotal = Math.max(0, subtotal + totalGst + delivery - advance);
-
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
 
   function addProduct(productId: string, index: number) {
@@ -136,7 +119,7 @@ export function NewQuotationForm({
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Client *</Label>
+              <Label>Client (optional)</Label>
               <div className="flex gap-2 mt-1">
                 <select
                   className="flex h-10 flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -226,10 +209,10 @@ export function NewQuotationForm({
                 <thead>
                   <tr className="border-b bg-muted/50">
                     <th className="text-left p-3">Item</th>
-                    <th className="text-right p-3">Qty</th>
-                    <th className="text-left p-3">Unit</th>
-                    <th className="text-right p-3">Rate (₹)</th>
-                    <th className="text-right p-3">GST %</th>
+                    <th className="text-right p-3 w-20">Qty</th>
+                    <th className="text-left p-3 w-16">Unit</th>
+                    <th className="text-right p-3 w-24">Rate (₹)</th>
+                    <th className="text-right p-3 w-20">GST %</th>
                     <th className="text-right p-3">Amount</th>
                     <th className="w-10 p-2"></th>
                   </tr>
@@ -265,40 +248,42 @@ export function NewQuotationForm({
                             className="h-9"
                           />
                         </td>
-                        <td className="p-2 text-right">
+                        <td className="p-2 text-right w-20">
                           <Input
                             type="number"
                             step="0.01"
-                            className="h-9 w-20 text-right"
+                            className="h-9 w-full min-w-0 text-right"
                             onFocus={selectAllIfZeroOrOne}
                             {...register(`items.${index}.quantity`, { valueAsNumber: true })}
                           />
                         </td>
-                        <td className="p-2">
+                        <td className="p-2 w-16">
                           <Input
-                            className="h-9 w-16"
+                            className="h-9 w-full min-w-0"
                             {...register(`items.${index}.unit`)}
                           />
                         </td>
-                        <td className="p-2 text-right">
+                        <td className="p-2 text-right w-24">
                           <Input
                             type="number"
                             step="0.01"
-                            className="h-9 w-24 text-right"
+                            className="h-9 w-full min-w-0 text-right"
                             onFocus={selectAllIfZero}
                             {...register(`items.${index}.rate`, { valueAsNumber: true })}
                           />
                         </td>
                         <td className="p-2 text-right">
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min={0}
-                            className="h-9 w-14 text-right"
-                            onFocus={selectAllIfZero}
-                            {...register(`items.${index}.gstPercent`, { valueAsNumber: true })}
-                          />
-                          %
+                          <div className="flex items-center justify-end gap-1">
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min={0}
+                              className="h-9 w-14 text-right"
+                              onFocus={selectAllIfZero}
+                              {...register(`items.${index}.gstPercent`, { valueAsNumber: true })}
+                            />
+                            <span className="shrink-0 text-muted-foreground w-4">%</span>
+                          </div>
                         </td>
                         <td className="p-2 text-right font-medium tabular-nums">
                           {formatCurrency(amount)}
@@ -319,96 +304,6 @@ export function NewQuotationForm({
                   })}
                 </tbody>
               </table>
-            </div>
-            <div className="mt-6 rounded-lg border bg-muted/30 p-4 space-y-2 max-w-sm ml-auto">
-              <div className="flex justify-between text-sm">
-                <span>Subtotal</span>
-                <span>{formatCurrency(subtotal)}</span>
-              </div>
-              {totalGst > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span>Total GST</span>
-                  <span>{formatCurrency(totalGst)}</span>
-                </div>
-              )}
-              {!showDelivery ? (
-                <button
-                  type="button"
-                  onClick={() => setShowDelivery(true)}
-                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add delivery charges
-                </button>
-              ) : (
-                <div className="flex justify-between text-sm items-center gap-2">
-                  <span>Delivery charges</span>
-                  <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min={0}
-                      placeholder="0"
-                      className="h-8 w-24 text-right"
-                      onFocus={selectAllIfZero}
-                      {...register("deliveryCharges", { valueAsNumber: true })}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => {
-                        setShowDelivery(false);
-                        setValue("deliveryCharges", undefined as unknown as number);
-                      }}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-              {!showAdvance ? (
-                <button
-                  type="button"
-                  onClick={() => setShowAdvance(true)}
-                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add advance payment
-                </button>
-              ) : (
-                <div className="flex justify-between text-sm items-center gap-2">
-                  <span>Advance paid</span>
-                  <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min={0}
-                      placeholder="0"
-                      className="h-8 w-24 text-right"
-                      onFocus={selectAllIfZero}
-                      {...register("advancePayment", { valueAsNumber: true })}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => {
-                        setShowAdvance(false);
-                        setValue("advancePayment", undefined as unknown as number);
-                      }}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-              <div className="flex justify-between font-semibold pt-3 border-t border-border">
-                <span>Total (INR)</span>
-                <span className="tabular-nums">{formatCurrency(grandTotal)}</span>
-              </div>
             </div>
             {errors.items && (
               <p className="text-xs text-destructive mt-2">{errors.items.message}</p>

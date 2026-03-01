@@ -10,8 +10,8 @@ export function InvoiceDocument({ data }: InvoiceDocumentProps) {
   return (
     <BaseDocument
       data={data}
-      title="INVOICE"
-      toLabel="Billed to"
+      title="Invoice"
+      toLabel="Billed To"
     />
   );
 }

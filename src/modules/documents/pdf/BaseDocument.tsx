@@ -13,20 +13,43 @@ import type { DocumentData } from "../types";
 
 type BaseDocumentProps = {
   data: DocumentData;
-  title: "INVOICE" | "QUOTATION";
+  /** Document title (e.g. "Invoice", "Quotation"). */
+  title: string;
   toLabel: string;
   /** Quotation only: validity text (e.g. "This quotation is valid for 15 days."). */
   validityText?: string;
+  /** Optional company tagline (e.g. "Uniform Suppliers · Kolkata"). */
+  companyTagline?: string;
+  /** When false, omit grand total, subtotal, amount in words (e.g. for quotations). */
+  showTotals?: boolean;
+  /** "quotation" = table with SL no, Description, Price/pc only. */
+  itemsTableVariant?: "invoice" | "quotation";
+  /** When false, hide status badge (e.g. "Unpaid") — for quotations. */
+  showStatus?: boolean;
+  /** When false, hide payment/bank details — for quotations. */
+  showPaymentInfo?: boolean;
 };
+
+function getStatus(watermark?: string): string {
+  if (watermark === "PAID") return "Paid";
+  if (watermark === "DRAFT") return "Draft";
+  return "Unpaid";
+}
 
 export function BaseDocument({
   data,
   title,
   toLabel,
   validityText,
+  companyTagline,
+  showTotals = true,
+  itemsTableVariant = "invoice",
+  showStatus = true,
+  showPaymentInfo = true,
 }: BaseDocumentProps) {
   const totals = calculateTotals(data.items);
   const currency = data.currency ?? "INR";
+  const status = getStatus(data.watermark);
 
   return (
     <Document>
@@ -39,27 +62,49 @@ export function BaseDocument({
           companyAddress={data.company.address || undefined}
           companyEmail={data.company.email}
           companyPhone={data.company.phone}
+          companyTagline={companyTagline}
+          status={showStatus ? status : undefined}
         />
+        <View style={docStyles.accentRule} />
         <PartyDetails billedBy={data.company} billedTo={data.client} toLabel={toLabel} />
-        <ItemsTable items={data.items} totals={totals} currency={currency} />
-        <TotalsBlock
-          totals={totals}
-          deliveryCharges={data.deliveryCharges}
-          advancePayment={data.advancePayment}
-          currency={currency}
-        />
-        <AmountInWords
-          totals={totals}
-          deliveryCharges={data.deliveryCharges}
-          advancePayment={data.advancePayment}
-        />
-        {validityText && (
-          <View style={docStyles.validity}>
-            <Text>{validityText}</Text>
-          </View>
-        )}
-        <NotesTerms notes={data.notes} terms={data.terms} />
-        {data.bankDetails && <BankDetails bank={data.bankDetails} />}
+
+        <View style={docStyles.content}>
+          <ItemsTable
+            items={data.items}
+            totals={totals}
+            currency={currency}
+            variant={itemsTableVariant}
+          />
+          {showTotals && (
+            <>
+              <TotalsBlock
+                totals={totals}
+                deliveryCharges={data.deliveryCharges}
+                advancePayment={data.advancePayment}
+                currency={currency}
+              />
+              <AmountInWords
+                totals={totals}
+                deliveryCharges={data.deliveryCharges}
+                advancePayment={data.advancePayment}
+              />
+            </>
+          )}
+          {validityText && (
+            <View style={docStyles.validity}>
+              <Text>{validityText}</Text>
+            </View>
+          )}
+          <NotesTerms notes={data.notes} terms={data.terms} />
+          {showPaymentInfo && data.bankDetails && <BankDetails bank={data.bankDetails} />}
+        </View>
+
+        <View style={docStyles.footer}>
+          <Text style={docStyles.footerNote}>
+            Thank you for your business.
+          </Text>
+          <Text style={docStyles.footerBrand}>{data.company.name}</Text>
+        </View>
       </Page>
     </Document>
   );

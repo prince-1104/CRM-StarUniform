@@ -38,16 +38,16 @@ export default async function InvoicesPage({
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Invoices</h1>
-        <Button asChild>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">Invoices</h1>
+        <Button asChild className="rounded-lg bg-primary hover:bg-primary/90">
           <Link href="/dashboard/invoices/new">New invoice</Link>
         </Button>
       </div>
-      <Card>
+      <Card className="rounded-xl border shadow-sm">
         <CardHeader>
-          <CardTitle>All invoices</CardTitle>
+          <CardTitle className="text-base font-semibold">All invoices</CardTitle>
         </CardHeader>
         <CardContent>
           <InvoicesList

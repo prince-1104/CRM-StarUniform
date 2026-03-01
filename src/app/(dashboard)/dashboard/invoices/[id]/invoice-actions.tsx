@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PdfPreviewDrawer } from "@/components/invoice/pdf-preview-drawer";
-import { FileDown, Eye, Share2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { FileDown, Eye, Share2, Pencil, Trash2 } from "lucide-react";
 
 export default function InvoiceActions({
   invoiceId,
@@ -27,6 +29,8 @@ export default function InvoiceActions({
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("upi");
   const [submitting, setSubmitting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const pending = grandTotal - totalPaid;
   const pdfUrl = `/api/invoices/${invoiceId}/pdf`;
@@ -73,8 +77,31 @@ export default function InvoiceActions({
     }
   }
 
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/invoices/${invoiceId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const j = await res.json();
+        alert(j.error ?? "Failed to delete invoice");
+        return;
+      }
+      setDeleteConfirmOpen(false);
+      router.push("/dashboard/invoices");
+      router.refresh();
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="flex items-center gap-2 flex-wrap">
+      <Button variant="outline" size="sm" asChild>
+        <Link href={`/dashboard/invoices/${invoiceId}/edit`}>
+          <Pencil className="h-4 w-4 mr-1.5" />
+          Edit
+        </Link>
+      </Button>
       <Button variant="outline" size="sm" asChild>
         <a href={pdfUrl} download={`Invoice-${docNumber}.pdf`}>
           <FileDown className="h-4 w-4 mr-1.5" />
@@ -89,6 +116,25 @@ export default function InvoiceActions({
         <Share2 className="h-4 w-4 mr-1.5" />
         Share
       </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        onClick={() => setDeleteConfirmOpen(true)}
+      >
+        <Trash2 className="h-4 w-4 mr-1.5" />
+        Delete
+      </Button>
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete this invoice?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
       <PdfPreviewDrawer
         open={previewOpen}
         onOpenChange={setPreviewOpen}

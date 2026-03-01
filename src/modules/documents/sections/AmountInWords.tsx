@@ -26,7 +26,9 @@ export function AmountInWords({
 
   return (
     <View style={docStyles.wordsBlock}>
-      <Text>Amount in words: {amountInWords(grandTotal)}</Text>
+      <Text>
+        Amount in words: <Text style={docStyles.wordsBlockStrong}>{amountInWords(grandTotal)}</Text>
+      </Text>
     </View>
   );
 }

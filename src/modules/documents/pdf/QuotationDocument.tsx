@@ -17,9 +17,13 @@ export function QuotationDocument({ data, validForDays = 15 }: QuotationDocument
   return (
     <BaseDocument
       data={data}
-      title="QUOTATION"
+      title="Quotation"
       toLabel="Quotation to"
       validityText={validityText}
+      showTotals={false}
+      itemsTableVariant="quotation"
+      showStatus={false}
+      showPaymentInfo={false}
     />
   );
 }

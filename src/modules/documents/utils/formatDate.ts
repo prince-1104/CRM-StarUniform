@@ -6,3 +6,10 @@ import dayjs from "dayjs";
 export function formatDate(date: string | Date): string {
   return dayjs(date).format("DD MMM YYYY");
 }
+
+/**
+ * Long format for document header (e.g. 26 February 2026).
+ */
+export function formatDateLong(date: string | Date): string {
+  return dayjs(date).format("DD MMMM YYYY");
+}

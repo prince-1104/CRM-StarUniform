@@ -17,6 +17,10 @@ export const getCachedDashboardStats = unstable_cache(
       documentType: "invoice" as const,
     };
 
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const in30Days = new Date(now);
+    in30Days.setDate(in30Days.getDate() + 30);
+
     const [
       totalInvoices,
       totalClients,
@@ -25,6 +29,8 @@ export const getCachedDashboardStats = unstable_cache(
       revenueMonth,
       revenueLastMonth,
       pendingInvoices,
+      paidThisMonthAgg,
+      upcomingCount,
     ] = await Promise.all([
       prisma.invoice.count({ where: baseInvoiceWhere }),
       prisma.client.count({
@@ -58,6 +64,21 @@ export const getCachedDashboardStats = unstable_cache(
         },
         _sum: { grandTotal: true },
       }),
+      prisma.invoice.aggregate({
+        where: {
+          ...baseInvoiceWhere,
+          status: "paid",
+          invoiceDate: { gte: startOfMonth, lte: endOfMonth },
+        },
+        _sum: { grandTotal: true },
+      }),
+      prisma.invoice.count({
+        where: {
+          ...baseInvoiceWhere,
+          dueDate: { gte: now, lte: in30Days },
+          status: { in: ["unpaid", "partial", "sent"] as const },
+        },
+      }),
     ]);
 
     const monthlyRevenue = Number(revenueMonth._sum.grandTotal ?? 0);
@@ -76,9 +97,53 @@ export const getCachedDashboardStats = unstable_cache(
       previousMonthRevenue,
       revenueTrend,
       pending: Number(pendingInvoices._sum.grandTotal ?? 0),
+      paidThisMonth: Number(paidThisMonthAgg._sum.grandTotal ?? 0),
+      upcomingCount,
     };
   },
   ["dashboard-stats"],
+  { revalidate: 60, tags: ["dashboard-stats"] }
+);
+
+/** Invoice totals by status for bar chart (Draft, Sent, Paid, Overdue) */
+export const getCachedInvoiceByAmountChartData = unstable_cache(
+  async (orgId: string) => {
+    const now = new Date();
+    const baseWhere = {
+      organizationId: orgId,
+      deletedAt: null,
+      documentType: "invoice" as const,
+    };
+    const [draft, sent, paid, overdue] = await Promise.all([
+      prisma.invoice.aggregate({
+        where: { ...baseWhere, status: "draft" },
+        _sum: { grandTotal: true },
+      }),
+      prisma.invoice.aggregate({
+        where: { ...baseWhere, status: "sent" },
+        _sum: { grandTotal: true },
+      }),
+      prisma.invoice.aggregate({
+        where: { ...baseWhere, status: "paid" },
+        _sum: { grandTotal: true },
+      }),
+      prisma.invoice.aggregate({
+        where: {
+          ...baseWhere,
+          status: { in: ["unpaid", "partial"] as const },
+          dueDate: { lt: now },
+        },
+        _sum: { grandTotal: true },
+      }),
+    ]);
+    return [
+      { status: "Draft", amount: Number(draft._sum.grandTotal ?? 0) },
+      { status: "Sent", amount: Number(sent._sum.grandTotal ?? 0) },
+      { status: "Paid", amount: Number(paid._sum.grandTotal ?? 0) },
+      { status: "Overdue", amount: Number(overdue._sum.grandTotal ?? 0) },
+    ];
+  },
+  ["invoice-by-amount-chart"],
   { revalidate: 60, tags: ["dashboard-stats"] }
 );
 
@@ -111,8 +176,8 @@ export const getCachedRevenueChartData = unstable_cache(
   { revalidate: 60, tags: ["dashboard-stats"] }
 );
 
-/** Recent invoices for dashboard */
-export async function getRecentInvoices(orgId: string, limit = 5) {
+/** Recent invoices for dashboard (with dueDate for table) */
+export async function getRecentInvoices(orgId: string, limit = 10) {
   return prisma.invoice.findMany({
     where: { organizationId: orgId, deletedAt: null, documentType: "invoice" },
     orderBy: { createdAt: "desc" },
@@ -123,6 +188,7 @@ export async function getRecentInvoices(orgId: string, limit = 5) {
       grandTotal: true,
       status: true,
       invoiceDate: true,
+      dueDate: true,
       client: { select: { name: true } },
     },
   });

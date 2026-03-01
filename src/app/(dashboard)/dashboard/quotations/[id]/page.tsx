@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDate, amountInWords } from "@/lib/utils";
 import { PaymentInfoDisplay } from "@/components/invoice/payment-info-display";
+import QuotationActions from "./quotation-actions";
 
 export default async function QuotationDetailPage({
   params,
@@ -40,11 +41,9 @@ export default async function QuotationDetailPage({
           <h1 className="text-2xl font-bold">{quotation.invoiceNumber}</h1>
           <span className="text-muted-foreground">Quotation</span>
         </div>
-        <Button variant="outline" size="sm" asChild>
-          <a href={`/api/invoices/${id}/pdf`} download>
-            Download PDF
-          </a>
-        </Button>
+        <div className="flex items-center gap-2">
+          <QuotationActions quotationId={id} docNumber={quotation.invoiceNumber} />
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -69,19 +68,25 @@ export default async function QuotationDetailPage({
             <CardTitle>Quotation to</CardTitle>
           </CardHeader>
           <CardContent className="text-sm space-y-1">
-            <p className="font-medium">{quotation.client.name}</p>
-            {(quotation.client.billingAddress || quotation.client.shippingAddress) && (
-              <p className="text-muted-foreground">
-                <span className="font-medium text-foreground">Address: </span>
-                {quotation.client.billingAddress || quotation.client.shippingAddress}
-              </p>
-            )}
-            {quotation.client.gstin && <p>GSTIN: {quotation.client.gstin}</p>}
-            {quotation.client.email && (
-              <p><a href={`mailto:${quotation.client.email}`} className="text-primary hover:underline">{quotation.client.email}</a></p>
-            )}
-            {quotation.client.phone && (
-              <p><a href={`tel:${quotation.client.phone}`} className="text-primary hover:underline">{quotation.client.phone}</a></p>
+            {quotation.client ? (
+              <>
+                <p className="font-medium">{quotation.client.name}</p>
+                {(quotation.client.billingAddress || quotation.client.shippingAddress) && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium text-foreground">Address: </span>
+                    {quotation.client.billingAddress || quotation.client.shippingAddress}
+                  </p>
+                )}
+                {quotation.client.gstin && <p>GSTIN: {quotation.client.gstin}</p>}
+                {quotation.client.email && (
+                  <p><a href={`mailto:${quotation.client.email}`} className="text-primary hover:underline">{quotation.client.email}</a></p>
+                )}
+                {quotation.client.phone && (
+                  <p><a href={`tel:${quotation.client.phone}`} className="text-primary hover:underline">{quotation.client.phone}</a></p>
+                )}
+              </>
+            ) : (
+              <p className="text-muted-foreground">—</p>
             )}
           </CardContent>
         </Card>
