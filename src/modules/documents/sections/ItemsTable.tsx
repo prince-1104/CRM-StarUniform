@@ -61,7 +61,7 @@ export function ItemsTable({ items, totals, currency = "INR", variant = "invoice
             <Text style={[docStyles.colItem, docStyles.cellBold]}>{item.name}</Text>
             <Text style={[docStyles.colQty, docStyles.cellMuted]}>{qtyUnit}</Text>
             <Text style={[docStyles.colUnitRate, docStyles.right]}>{formatCurrencyForPdf(item.rate, currency)}</Text>
-            <Text style={[docStyles.colGst, docStyles.right]}>{item.gstPercent}%</Text>
+            <Text style={[docStyles.colGst, docStyles.right]}>{Number(item.gstPercent)}%</Text>
             <Text style={[docStyles.colAmount, docStyles.right, docStyles.cellBold]}>{formatCurrencyForPdf(lineTotal, currency)}</Text>
           </View>
         );

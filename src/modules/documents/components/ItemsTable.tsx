@@ -51,7 +51,7 @@ export function ItemsTable({ items, totals, currency = "INR" }: ItemsTableProps)
             <Text style={[documentStyles.colRate, documentStyles.right]}>
               {formatCurrency(row.rate, currency)}
             </Text>
-            <Text style={[documentStyles.colGst, documentStyles.right]}>{row.gstPercent}%</Text>
+            <Text style={[documentStyles.colGst, documentStyles.right]}>{Number(row.gstPercent)}%</Text>
             <Text style={[documentStyles.colAmount, documentStyles.right]}>
               {formatCurrency(row.lineTotal, currency)}
             </Text>

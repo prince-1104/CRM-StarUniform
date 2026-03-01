@@ -63,7 +63,7 @@ export default function CatalogueList({
                   <tr key={p.id} className="border-b last:border-0">
                     <td className="p-3 font-medium">{p.name}</td>
                     <td className="p-3 text-right">₹{Number(p.defaultPrice).toFixed(2)}</td>
-                    <td className="p-3 text-right">{p.gstPercent}%</td>
+                    <td className="p-3 text-right">{Number(p.gstPercent)}%</td>
                     <td className="p-3">{p.unit}</td>
                     <td className="p-3 text-right">
                       <Button variant="ghost" size="sm" asChild>
