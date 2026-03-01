@@ -245,7 +245,9 @@ export default function InvoicesList({
             confirmLabel="Delete"
             variant="destructive"
             loading={deleting}
-            onConfirm={() => deleteConfirm.single && handleDeleteSingle(deleteConfirm.single)}
+            onConfirm={() => {
+              if (deleteConfirm.single) handleDeleteSingle(deleteConfirm.single);
+            }}
           />
           <ConfirmDialog
             open={deleteConfirm.bulk}
