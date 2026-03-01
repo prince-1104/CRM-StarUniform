@@ -17,10 +17,10 @@ export const getCachedClientList = unstable_cache(
   { revalidate: 30, tags: ["clients"] }
 );
 
-/** Cached product list for dropdown selects — revalidates every 30s or on tag. */
+/** Cached product list for dropdown selects — revalidates every 30s or on tag. Returns plain numbers for defaultPrice/gstPercent (no Prisma Decimal). */
 export const getCachedProductList = unstable_cache(
   async (orgId: string) => {
-    return prisma.product.findMany({
+    const rows = await prisma.product.findMany({
       where: { organizationId: orgId, deletedAt: null },
       orderBy: { name: "asc" },
       select: {
@@ -32,6 +32,13 @@ export const getCachedProductList = unstable_cache(
       },
       take: 500,
     });
+    return rows.map((p) => ({
+      id: p.id,
+      name: p.name,
+      defaultPrice: Number(p.defaultPrice),
+      gstPercent: Number(p.gstPercent),
+      unit: p.unit,
+    }));
   },
   ["product-list"],
   { revalidate: 30, tags: ["products"] }

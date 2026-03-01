@@ -32,7 +32,7 @@ export function RevenueChart({ data }: { data: Point[] }) {
             className="text-muted-foreground"
           />
           <Tooltip
-            formatter={(value: number) => [formatCurrency(value), "Revenue"]}
+            formatter={(value: number | undefined) => [formatCurrency(value ?? 0), "Revenue"]}
             labelStyle={{ color: "hsl(var(--foreground))" }}
             contentStyle={{
               backgroundColor: "hsl(var(--card))",

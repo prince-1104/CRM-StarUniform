@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 type Product = {
   id: string;
   name: string;
-  defaultPrice: { toString(): string };
-  gstPercent: { toString(): string };
+  defaultPrice: number;
+  gstPercent: number;
   unit: string;
 };
 

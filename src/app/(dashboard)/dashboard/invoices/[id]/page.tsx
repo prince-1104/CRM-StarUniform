@@ -115,19 +115,25 @@ export default async function InvoiceDetailPage({
             <CardTitle>Bill to</CardTitle>
           </CardHeader>
           <CardContent className="text-sm space-y-1">
-            <p className="font-medium">{invoice.client.name}</p>
-            {(invoice.client.billingAddress || invoice.client.shippingAddress) && (
-              <p className="text-muted-foreground">
-                <span className="font-medium text-foreground">Address: </span>
-                {invoice.client.billingAddress || invoice.client.shippingAddress}
-              </p>
-            )}
-            {invoice.client.gstin && <p>GSTIN: {invoice.client.gstin}</p>}
-            {invoice.client.email && (
-              <p><a href={`mailto:${invoice.client.email}`} className="text-primary hover:underline">{invoice.client.email}</a></p>
-            )}
-            {invoice.client.phone && (
-              <p><a href={`tel:${invoice.client.phone}`} className="text-primary hover:underline">{invoice.client.phone}</a></p>
+            {invoice.client ? (
+              <>
+                <p className="font-medium">{invoice.client.name}</p>
+                {(invoice.client.billingAddress || invoice.client.shippingAddress) && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium text-foreground">Address: </span>
+                    {invoice.client.billingAddress || invoice.client.shippingAddress}
+                  </p>
+                )}
+                {invoice.client.gstin && <p>GSTIN: {invoice.client.gstin}</p>}
+                {invoice.client.email && (
+                  <p><a href={`mailto:${invoice.client.email}`} className="text-primary hover:underline">{invoice.client.email}</a></p>
+                )}
+                {invoice.client.phone && (
+                  <p><a href={`tel:${invoice.client.phone}`} className="text-primary hover:underline">{invoice.client.phone}</a></p>
+                )}
+              </>
+            ) : (
+              <p className="text-muted-foreground">—</p>
             )}
           </CardContent>
         </Card>

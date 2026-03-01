@@ -45,19 +45,21 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async jwt({ token, user }: { token: any; user?: any }) {
+      if (user?.id) {
         token.id = user.id;
-        token.organizationId = (user as { organizationId?: string }).organizationId;
-        token.role = (user as { role?: string }).role;
+        token.organizationId = user.organizationId;
+        token.role = user.role;
       }
       return token;
     },
-    async session({ session, token }) {
-      if (session.user) {
-        (session.user as { id?: string }).id = token.id as string;
-        (session.user as { organizationId?: string }).organizationId = token.organizationId as string;
-        (session.user as { role?: string }).role = token.role as string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async session({ session, token }: { session: any; token: any }) {
+      if (session?.user) {
+        session.user.id = token.id;
+        session.user.organizationId = token.organizationId;
+        session.user.role = token.role;
       }
       return session;
     },

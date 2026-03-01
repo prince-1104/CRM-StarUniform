@@ -26,7 +26,7 @@ export function InvoicePdf({ data }: InvoicePdfProps) {
     <BaseDocumentLayout watermark={data.watermark}>
       <DocumentHeader
         title="INVOICE"
-        docNumber={data.docNumber}
+        docNumber={data.documentNumber}
         date={data.date}
         companyName={data.company.name}
         logoUrl={data.logoUrl}

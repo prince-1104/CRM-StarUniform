@@ -34,7 +34,7 @@ export function InvoiceByAmountChart({ data }: { data: Point[] }) {
             className="text-muted-foreground"
           />
           <Tooltip
-            formatter={(value: number) => [formatCurrency(value), "Amount"]}
+            formatter={(value: number | undefined) => [formatCurrency(value ?? 0), "Amount"]}
             labelStyle={{ color: "hsl(var(--foreground))" }}
             contentStyle={{
               backgroundColor: "hsl(var(--card))",

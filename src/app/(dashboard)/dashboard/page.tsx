@@ -251,7 +251,7 @@ export default async function DashboardPage() {
                           {inv.invoiceNumber}
                         </Link>
                       </td>
-                      <td className="p-3 text-foreground">{inv.client.name}</td>
+                      <td className="p-3 text-foreground">{inv.client?.name ?? "—"}</td>
                       <td className="p-3 text-muted-foreground">{formatDate(inv.invoiceDate)}</td>
                       <td className="p-3 text-muted-foreground">
                         {inv.dueDate ? formatDate(inv.dueDate) : "—"}

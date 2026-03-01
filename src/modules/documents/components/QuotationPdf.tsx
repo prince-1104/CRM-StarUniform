@@ -28,7 +28,7 @@ export function QuotationPdf({ data, validForDays = 15 }: QuotationPdfProps) {
     <BaseDocumentLayout watermark={data.watermark}>
       <DocumentHeader
         title="QUOTATION"
-        docNumber={data.docNumber}
+        docNumber={data.documentNumber}
         date={data.date}
         companyName={data.company.name}
         logoUrl={data.logoUrl}

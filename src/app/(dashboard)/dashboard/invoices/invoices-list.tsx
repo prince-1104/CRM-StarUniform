@@ -21,7 +21,7 @@ type Invoice = {
   dueDate: Date | null;
   grandTotal: { toString(): string };
   status: string;
-  client: { name: string };
+  client: { name: string } | null;
 };
 
 function StatusPill({ status, dueDate }: { status: string; dueDate?: Date | null }) {
@@ -189,7 +189,7 @@ export default function InvoicesList({
                         {inv.invoiceNumber}
                       </Link>
                     </td>
-                    <td className="p-3 text-foreground">{inv.client.name}</td>
+                    <td className="p-3 text-foreground">{inv.client?.name ?? "—"}</td>
                     <td className="p-3 text-muted-foreground">{formatDate(inv.invoiceDate)}</td>
                     <td className="p-3 text-muted-foreground">
                       {inv.dueDate ? formatDate(inv.dueDate) : "—"}

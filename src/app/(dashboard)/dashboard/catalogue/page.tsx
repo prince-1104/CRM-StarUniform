@@ -23,7 +23,7 @@ export default async function CataloguePage({
     ...(search ? { name: { contains: search, mode: "insensitive" as const } } : {}),
   };
 
-  const [products, total] = await Promise.all([
+  const [rawProducts, total] = await Promise.all([
     prisma.product.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -32,6 +32,14 @@ export default async function CataloguePage({
     }),
     prisma.product.count({ where }),
   ]);
+
+  const products = rawProducts.map((p) => ({
+    id: p.id,
+    name: p.name,
+    defaultPrice: Number(p.defaultPrice),
+    gstPercent: Number(p.gstPercent),
+    unit: p.unit,
+  }));
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
