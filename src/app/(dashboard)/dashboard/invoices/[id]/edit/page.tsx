@@ -42,7 +42,7 @@ export default async function EditInvoicePage({
       invoiceId={id}
       invoiceNumber={invoice.invoiceNumber}
       initialData={{
-        clientId: invoice.clientId,
+        clientId: invoice.clientId ?? "",
         invoiceDate: invoice.invoiceDate.toISOString().slice(0, 10),
         dueDate: invoice.dueDate ? invoice.dueDate.toISOString().slice(0, 10) : "",
         notes: invoice.notes ?? "",
